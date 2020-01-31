@@ -6,7 +6,7 @@ represented using the Bristol Fashion.
 
 import doctest
 
-from gate import Gate
+from bfcl.gate import Gate
 
 class Circuit():
     """
