@@ -74,7 +74,7 @@ class Circuit():
         self.gate = []
         
         if raw is not None:
-            self.parse_bristol_fashion_string(raw)
+            self.parse_from_bristol_fashion_string(raw)
 
     def parse_from_bristol_fashion_string(self, raw):
         rows = [r.strip() for r in raw.split("\n") if r.strip() != ""]
