@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setup(
     name="bfcl",
-    version="0.0.1.2",
+    version="0.0.1.3",
     packages=["bfcl",],
     install_requires=[],
     license="MIT",

@@ -32,11 +32,11 @@ class Circuit():
     >>> c.wire_in_count
     8
     >>> c.wire_in_index
-    [1, 2, 3, 4, 5, 6, 7, 8]
+    [0, 1, 2, 3, 4, 5, 6, 7]
     >>> c.wire_out_count
     1
     >>> c.wire_out_index
-    [36]
+    [35]
     >>> (c.gate[0].wire_in_index, c.gate[0].wire_out_index)
     ([0, 1], [15])
     >>> (c.gate[1].wire_in_index, c.gate[1].wire_out_index)
@@ -98,10 +98,10 @@ class Circuit():
             self.wire_out_count += length
 
         # Collect input/output wire indices for easier processing.
-        for i in range(1, self.wire_in_count+1):
+        for i in range(0, self.wire_in_count):
             self.wire_in_index.append(i)
 
-        for i in range(1+self.wire_count-self.wire_out_count, self.wire_count+1):
+        for i in range(self.wire_count-self.wire_out_count, self.wire_count):
             self.wire_out_index.append(i)
 
         # Parse the individual gates.
