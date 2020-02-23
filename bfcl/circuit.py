@@ -107,18 +107,18 @@ class Circuit():
         # Parse the individual gates.
         for row in range(3, self.gate_count+3):
             tokens = rows[row]
-            gateNew = Gate()
+            gate_new = Gate()
 
-            gateNew.wire_in_count = int(tokens[0])
-            gateNew.wire_out_count = int(tokens[1])
+            gate_new.wire_in_count = int(tokens[0])
+            gate_new.wire_out_count = int(tokens[1])
 
-            switch = 2 + gateNew.wire_in_count
-            gateNew.wire_in_index = [int(t) for t in tokens[2:switch]]
-            gateNew.wire_out_index = [int(t) for t in tokens[switch:-1]]
-            gateNew.operation =\
+            switch = 2 + gate_new.wire_in_count
+            gate_new.wire_in_index = [int(t) for t in tokens[2:switch]]
+            gate_new.wire_out_index = [int(t) for t in tokens[switch:-1]]
+            gate_new.operation =\
               Gate.operation_from_bristol_fashion_string(tokens[-1])
 
-            self.gate.append(gateNew);
+            self.gate.append(gate_new);
 
 if __name__ == "__main__":
     doctest.testmod()
