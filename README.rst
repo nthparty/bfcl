@@ -2,7 +2,7 @@
 bfcl
 ====
 
-Bristol Fashion Python Library (BFCL) for working with circuit definitions represented using the Bristol Fashion.
+Bristol Fashion Circuit Library (BFCL) for working with circuit definitions represented using the Bristol Fashion.
 
 .. image:: https://badge.fury.io/py/bfcl.svg
    :target: https://badge.fury.io/py/bfcl
