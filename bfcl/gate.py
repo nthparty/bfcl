@@ -11,11 +11,18 @@ class Gate():
     Class for circuit gates.
     """
 
-    def __init__(self):
-        wire_in_index = []
-        wire_out_index = []
-        operation = 'UNKNOWN'
-    
+    def __init__(\
+            self,
+            wire_in_count = None, wire_out_count = None,
+            wire_in_index = [], wire_out_index = [],
+            operation = None
+        ):
+        self.wire_in_count = wire_in_count
+        self.wire_out_count = wire_out_count
+        self.wire_in_index = wire_in_index
+        self.wire_out_index = wire_out_index
+        self.operation = operation
+
     @staticmethod
     def operation_from_bristol_fashion_string(raw):
         convert = {'AND':'AND', 'XOR':'XOR', 'INV':'NOT'}
