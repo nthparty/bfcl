@@ -5,6 +5,7 @@ represented using the Bristol Fashion.
 """
 
 import doctest
+from parts import parts
 
 from bfcl.gate import Gate
 from bfcl.circuit import Circuit
@@ -50,7 +51,34 @@ class Construct():
 
         self.circuit.gate.append(gate_new)
 
-        return gate_new
+        return gate_new.wire_out_index
+        
+    def gates_map(self, operation, wire_in_index):
+        wire_out_index = []
+        for i in wire_in_index:
+            wire_out_index.append(self.gate(operation, i))
+        return wire_out_index
+
+    def gates_zip(self, operation, wire_in_index_lft, wire_in_index_rgt):
+        wire_out_index = []
+        for (l, r) in zip(wire_in_index_lft, wire_in_index_rgt):
+            wire_out_index.append(self.gate(operation, l, r))
+        return wire_out_index
+
+    def gates_pair(self, operation, wire_in_index):
+        wire_out_index = []
+        for ws in parts(wire_in_index, length=2):
+            if len(ws) == 1:
+                wire_out_index.append(ws[0])
+            else:
+                wire_out_index.append(self.gate(operation, ws[0], ws[1]))
+        return wire_out_index
+
+    def gates_fold(self, operation, wire_in_index):
+        wire_out_index = self.gates_pair(operation, wire_in_index)
+        while len(wire_out_index) > 1:
+            wire_out_index = self.gates_pair(operation, wire_out_index)
+        return wire_out_index[0]
 
 if __name__ == "__main__":
     doctest.testmod()
