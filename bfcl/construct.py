@@ -28,7 +28,7 @@ class Construct():
         self.circuit.wire_count += length
     
         self.circuit.value_in_count += 1
-        self.circuit.value_in_length.append(length)'
+        self.circuit.value_in_length.append(length)
 
         wire_in_index_new = list(range(self.circuit.wire_in_count, self.circuit.wire_in_count + length))
         self.circuit.wire_in_count += length
