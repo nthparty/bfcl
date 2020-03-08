@@ -10,7 +10,7 @@ from bfcl.gate import Gate
 
 class Circuit():
     """
-    Class for circuits.
+    Data structure for circuits.
     
     >>> circuit_string = ['7 36', '2 4 4', '1 1']
     >>> circuit_string.extend(['2 1 0 1 15 AND', '2 1 2 3 16 AND'])
@@ -53,10 +53,16 @@ class Circuit():
     ([8, 9], [35])
     >>> {c.gate[i].operation for i in range(7)}
     {'AND'}
-    
+    >>> from itertools import product
+    >>> inputs = list(product(*([[0,1]]*4)))
+    >>> pairs = product(inputs, inputs)
+    >>> outputs = ([0]*255) + [1]
+    >>> [c.evaluate(p)[0][0] for p in pairs] == outputs
+    True
     """
 
     def __init__(self, raw = None):
+        """Initialize a circuit data structure instance."""
         self.gate_count = 0
         self.wire_count = 0
         self.value_in_count = 0
@@ -77,6 +83,7 @@ class Circuit():
             self.parse_from_bristol_fashion_string(raw)
 
     def parse_from_bristol_fashion_string(self, raw):
+        """Parse a Bristol Fashion string representation of a circuit."""
         rows = [r.strip() for r in raw.split("\n") if r.strip() != ""]
         rows = [[tok.strip() for tok in r.split(" ")] for r in rows]
 
@@ -118,7 +125,57 @@ class Circuit():
             gate_new.operation =\
               Gate.operation_from_bristol_fashion_string(tokens[-1])
 
-            self.gate.append(gate_new);
+            self.gate.append(gate_new)
+
+    def evaluate(self, inputs):
+        """Evaluate a circuit on a sequence of input bit vectors."""
+        wire = [0 for _ in range(self.wire_count)]
+        circuit_input_wire_index = 0
+
+        # Assign input values to corresponding wires.
+        # It is assumed that the number of input wires
+        # in the circuit matches the total number of bits
+        # across all inputs in the inputs vector.
+        for i in range(len(inputs)):
+            for j in range(len(inputs[i])):
+                wire[circuit_input_wire_index] = inputs[i][j]
+                circuit_input_wire_index += 1
+
+        # Evaluate the gates.
+        for i in range(self.gate_count):
+            if self.gate[i].operation == 'AND':
+                wire[self.gate[i].wire_out_index[0]] =\
+                    1 if\
+                    ((wire[self.gate[i].wire_in_index[0]] == 1) and\
+                     (wire[self.gate[i].wire_in_index[1]] == 1))\
+                    else 0
+            elif self.gate[i].operation == 'XOR':
+                wire[self.gate[i].wire_out_index[0]] =\
+                    1 if\
+                    (wire[self.gate[i].wire_in_index[0]] !=\
+                     wire[self.gate[i].wire_in_index[1]])\
+                    else 0
+            elif self.gate[i].operation == 'NOT':
+                wire[self.gate[i].wire_out_index[0]] =\
+                    0 if\
+                    (wire[self.gate[i].wire_in_index[0]] == 1)\
+                    else 1
+            elif self.gate[i].operation == 'UNKNOWN':
+                pass
+
+        # Build the output values.
+        outputs = []
+        offset = self.wire_count
+        for i in range(self.value_out_count):
+            offset -= self.value_out_length[i]
+        for i in range(self.value_out_count):
+            bits = []
+            for j in range(self.value_out_length[i]):
+                bits.append(wire[offset])
+                offset += 1
+            outputs.append(bits)
+
+        return outputs
 
 if __name__ == "__main__":
     doctest.testmod()
