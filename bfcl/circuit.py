@@ -143,7 +143,12 @@ class Circuit():
 
         # Evaluate the gates.
         for i in range(self.gate_count):
-            if self.gate[i].operation == 'AND':
+            if self.gate[i].operation == 'NOT':
+                wire[self.gate[i].wire_out_index[0]] =\
+                    0 if\
+                    (wire[self.gate[i].wire_in_index[0]] == 1)\
+                    else 1
+            elif self.gate[i].operation == 'AND':
                 wire[self.gate[i].wire_out_index[0]] =\
                     1 if\
                     ((wire[self.gate[i].wire_in_index[0]] == 1) and\
@@ -155,11 +160,24 @@ class Circuit():
                     (wire[self.gate[i].wire_in_index[0]] !=\
                      wire[self.gate[i].wire_in_index[1]])\
                     else 0
-            elif self.gate[i].operation == 'NOT':
+            elif self.gate[i].operation == 'OR':
+                wire[self.gate[i].wire_out_index[0]] =\
+                    1 if\
+                    ((wire[self.gate[i].wire_in_index[0]] == 1) or\
+                     (wire[self.gate[i].wire_in_index[1]] == 1))\
+                    else 0
+            elif self.gate[i].operation == 'NAND':
                 wire[self.gate[i].wire_out_index[0]] =\
                     0 if\
-                    (wire[self.gate[i].wire_in_index[0]] == 1)\
+                    ((wire[self.gate[i].wire_in_index[0]] == 1) and\
+                     (wire[self.gate[i].wire_in_index[1]] == 1))\
                     else 1
+            elif self.gate[i].operation == 'NIMP':
+                wire[self.gate[i].wire_out_index[0]] =\
+                    1 if\
+                    ((wire[self.gate[i].wire_in_index[0]] == 1) and\
+                     (wire[self.gate[i].wire_in_index[1]] == 0))\
+                    else 0
             elif self.gate[i].operation == 'UNKNOWN':
                 pass
 

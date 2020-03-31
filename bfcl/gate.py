@@ -27,8 +27,8 @@ class Gate():
     @staticmethod
     def operation_from_bristol_fashion_string(raw):
         """Parse a Bristol Fashion circuit gate operator string."""
-        convert = {'AND':'AND', 'XOR':'XOR', 'INV':'NOT'}
-        return convert[raw.upper().strip()]
+        convert = {'INV':'NOT', 'AND':'AND', 'XOR':'XOR', 'OR':'OR', 'NAN':'NAND', 'NIM':'NIMP'}
+        return getattr(convert, raw.upper().strip(), 'UNKNOWN')
 
 if __name__ == "__main__":
     doctest.testmod()
