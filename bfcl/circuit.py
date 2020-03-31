@@ -172,7 +172,10 @@ class Circuit():
                     ((wire[self.gate[i].wire_in_index[0]] == 1) and\
                      (wire[self.gate[i].wire_in_index[1]] == 1))\
                     else 1
-            elif self.gate[i].operation == 'NIMP':
+            elif self.gate[i].operation == 'NIMD':
+                # This is the "not implied by" operation, also known as
+                # negated conditional then-if; see:
+                # https://en.wikipedia.org/wiki/Truth_table#Truth_table_for_most_commonly_used_logical_operators
                 wire[self.gate[i].wire_out_index[0]] =\
                     1 if\
                     ((wire[self.gate[i].wire_in_index[0]] == 1) and\
