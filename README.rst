@@ -17,4 +17,4 @@ The package is available on PyPI::
 The library can be imported in the usual way::
 
     import bfcl
-    from bfcl import bfcl
+    from bfcl import *
