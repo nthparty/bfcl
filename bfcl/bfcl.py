@@ -242,9 +242,18 @@ class circuit():
         inputs = [b for bs in inputs for b in bs]
         wire = inputs + [0]*(self.wire_count-len(inputs))
 
+        # This total is useful in case output wire indices are absent.
+        wire_in_count = len(inputs)
+
         # Evaluate the gates.
-        for g in self.gate:
-            wire[g.wire_out_index[0]] =\
+        for (ig, g) in enumerate(self.gate):
+            # If no output wire index is present, use the gate count as the index.
+            wire_out_index =\
+                g.wire_out_index[0] if hasattr(g, 'wire_out_index') else\
+                wire_in_count + ig
+
+            # Compute the operation and store the result.
+            wire[wire_out_index] =\
                 g.operation(*[wire[i] for i in g.wire_in_index])
 
         # Format and return the output bit vectors.
