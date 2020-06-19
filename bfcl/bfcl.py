@@ -1,14 +1,14 @@
-"""Circuit gate data structure.
+"""Circuit definition data structures.
 
 Python library for working with circuit definitions
 represented using the Bristol Fashion.
 """
 
 from __future__ import annotations
+import doctest
 from typing import Sequence
 from parts import parts
 import circuit as circuit_
-import doctest
 
 class operation(circuit_.operation):
     """
@@ -22,7 +22,7 @@ class operation(circuit_.operation):
 
     def emit(self: operation) -> str:
         """Emit a Bristol Fashion operation token."""
-        return [s for (s,o) in operation.token_op_pairs if o == self][0]
+        return [s for (s, o) in operation.token_op_pairs if o == self][0]
 
 operation.token_op_pairs = [
     ('INV', operation.not_),
@@ -46,22 +46,24 @@ class gate():
     Data structure for an individual circuit logic gate.
     """
 
-    def __init__(self: gate,
-                 wire_in_count: int = None, wire_out_count: int = None,
-                 wire_in_index: Sequence[int] = [], 
-                 wire_out_index: Sequence[int] = [],
-                 operation: operation = None):
+    def __init__(
+            self: gate,
+            wire_in_count: int = None, wire_out_count: int = None,
+            wire_in_index: Sequence[int] = None,
+            wire_out_index: Sequence[int] = None,
+            operation: operation = None
+        ):
         self.wire_in_count = wire_in_count
         self.wire_out_count = wire_out_count
-        self.wire_in_index = wire_in_index
-        self.wire_out_index = wire_out_index
+        self.wire_in_index = [] if wire_in_index is None else wire_in_index
+        self.wire_out_index = [] if wire_out_index is None else wire_out_index
         self.operation = operation
 
     @staticmethod
     def parse(tokens) -> gate:
         """Parse a Bristol Fashion gate string or token list."""
         if isinstance(tokens, str):
-            tokens = [tok.strip() for tok in raw.strip().split(" ")]
+            tokens = [tok.strip() for tok in tokens.strip().split(" ")]
 
         return gate(
             int(tokens[0]), int(tokens[1]),
@@ -82,7 +84,7 @@ class gate():
 class circuit():
     """
     Data structure for circuits.
-    
+
     >>> circuit_string = ['7 36', '2 4 4', '1 1']
     >>> circuit_string.extend(['2 1 0 1 15 AND', '2 1 2 3 16 AND'])
     >>> circuit_string.extend(['2 1 15 16 8 AND', '2 1 4 5 22 AND'])
@@ -132,7 +134,7 @@ class circuit():
     True
     """
 
-    def __init__(self: circuit, raw = None):
+    def __init__(self: circuit, raw=None):
         """Initialize a circuit data structure instance."""
         self.gate_count = 0
         self.wire_count = 0
@@ -153,7 +155,7 @@ class circuit():
         # Convert a string or circuit input.
         if isinstance(raw, str):
             self.parse(raw)
-        elif type(raw) is circuit_.circuit:
+        elif isinstance(raw, circuit_.circuit):
             self.circuit(raw)
 
     def circuit(self: circuit, c: circuit_.circuit):
@@ -193,7 +195,7 @@ class circuit():
     def parse(self: circuit, raw: str):
         """Parse a Bristol Fashion string representation of a circuit."""
         rows = [
-            [tok.strip() for tok in r.strip().split(" ")] 
+            [tok.strip() for tok in r.strip().split(" ")]
             for r in raw.split("\n") if r.strip() != ""
         ]
 
@@ -233,8 +235,10 @@ class circuit():
         lines.extend([[g.emit()] for g in progress(self.gate)])
         return "\n".join(" ".join(line) for line in lines)
 
-    def evaluate(self: circuit,
-                 inputs: Sequence[Sequence[int]]) -> Sequence[Sequence[int]]:
+    def evaluate(
+            self: circuit,
+            inputs: Sequence[Sequence[int]]
+        ) -> Sequence[Sequence[int]]:
         """Evaluate a circuit on a sequence of input bit vectors."""
 
         # It is assumed that the number of input wires in the circuit matches
@@ -259,7 +263,7 @@ class circuit():
         # Format and return the output bit vectors.
         return list(parts(
             wire[-self.wire_out_count:],
-            length = self.value_out_length
+            length=self.value_out_length
         ))
 
 if __name__ == "__main__":
