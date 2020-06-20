@@ -5,8 +5,8 @@ represented using the Bristol Fashion.
 """
 
 from __future__ import annotations
-import doctest
 from typing import Sequence
+import doctest
 from parts import parts
 import circuit as circuit_
 
