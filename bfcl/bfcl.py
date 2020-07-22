@@ -25,24 +25,24 @@ class operation(circuit_.operation):
         return [s for (s, o) in operation.token_op_pairs if o == self][0]
 
 operation.token_op_pairs = [
-    ('LID', operation((0,1))),
-    ('INV', operation((1,0))),
-    ('FLS', operation((0,0,0,0))),
-    ('AND', operation((0,0,0,1))),
-    ('NIM', operation((0,0,1,0))),
-    ('FST', operation((0,0,1,1))),
-    ('NIF', operation((0,1,0,0))),
-    ('SND', operation((0,1,0,1))),
-    ('XOR', operation((0,1,1,0))),
-    ('LOR', operation((0,1,1,1))),
-    ('NOR', operation((1,0,0,0))),
-    ('XNR', operation((1,0,0,1))),
-    ('NSD', operation((1,0,1,0))),
-    ('LIF', operation((1,0,1,1))),
-    ('NFT', operation((1,1,0,0))),
-    ('IMP', operation((1,1,0,1))),
-    ('NND', operation((1,1,1,0))),
-    ('TRU', operation((1,1,1,1)))
+    ('LID', operation((0, 1))),
+    ('INV', operation((1, 0))),
+    ('FLS', operation((0, 0, 0, 0))),
+    ('AND', operation((0, 0, 0, 1))),
+    ('NIM', operation((0, 0, 1, 0))),
+    ('FST', operation((0, 0, 1, 1))),
+    ('NIF', operation((0, 1, 0, 0))),
+    ('SND', operation((0, 1, 0, 1))),
+    ('XOR', operation((0, 1, 1, 0))),
+    ('LOR', operation((0, 1, 1, 1))),
+    ('NOR', operation((1, 0, 0, 0))),
+    ('XNR', operation((1, 0, 0, 1))),
+    ('NSD', operation((1, 0, 1, 0))),
+    ('LIF', operation((1, 0, 1, 1))),
+    ('NFT', operation((1, 1, 0, 0))),
+    ('IMP', operation((1, 1, 0, 1))),
+    ('NND', operation((1, 1, 1, 0))),
+    ('TRU', operation((1, 1, 1, 1)))
 ]
 
 # Concise synonym for class.
@@ -51,6 +51,11 @@ op = operation
 class gate():
     """
     Data structure for an individual circuit logic gate.
+
+    >>> gate.parse('2 1 0 1 15 AND').emit()
+    '2 1 0 1 15 AND'
+    >>> gate.parse('1 1 100 200 INV').emit()
+    '1 1 100 200 INV'
     """
 
     def __init__(
@@ -98,8 +103,7 @@ class circuit():
     >>> circuit_string.extend(['2 1 6 7 23 AND', '2 1 22 23 9 AND'])
     >>> circuit_string.extend(['2 1 8 9 35 AND'])
     >>> circuit_string = "\\n".join(circuit_string)
-    >>> c = circuit()
-    >>> c.parse(circuit_string)
+    >>> c = circuit(circuit_string)
     >>> c.emit() == circuit_string
     True
     >>> c.gate_count
@@ -169,7 +173,22 @@ class circuit():
             self.circuit(raw)
 
     def circuit(self: circuit, c: circuit_.circuit):
-        """Construct a Bristol Fashion circuit from `circuit` library object."""
+        """
+        Construct a Bristol Fashion circuit from `circuit` library object.
+
+        >>> c_ = circuit_.circuit()
+        >>> c_.count()
+        0
+        >>> g0 = c_.gate(op.id_, is_input=True)
+        >>> g1 = c_.gate(op.id_, is_input=True)
+        >>> g2 = c_.gate(op.and_, [g0, g1])
+        >>> g3 = c_.gate(op.id_, [g2], is_output=True)
+        >>> c_.count()
+        4
+        >>> c = circuit(c_)
+        >>> c.emit().split("\\n")
+        ['2 4', '1 2', '1 1', '2 1 0 1 2 AND', '1 1 2 3 LID']
+        """
         sig = c.signature
         self.gate_count =\
             c.count(lambda g: not (len(g.inputs) == 0 and len(g.outputs) > 0))
