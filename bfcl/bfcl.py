@@ -25,17 +25,24 @@ class operation(circuit_.operation):
         return [s for (s, o) in operation.token_op_pairs if o == self][0]
 
 operation.token_op_pairs = [
-    ('INV', operation.not_),
-    ('AND', operation.and_),
-    ('NIF', operation.nif_),
-    ('NIM', operation.nimp_),
-    ('XOR', operation.xor_),
-    ('LOR', operation.or_),
-    ('NOR', operation.nor_),
-    ('XNR', operation.xnor_),
-    ('LIF', operation.if_),
-    ('IMP', operation.imp_),
-    ('NND', operation.nand_)
+    ('LID', operation((0,1))),
+    ('INV', operation((1,0))),
+    ('FLS', operation((0,0,0,0))),
+    ('AND', operation((0,0,0,1))),
+    ('NIM', operation((0,0,1,0))),
+    ('FST', operation((0,0,1,1))),
+    ('NIF', operation((0,1,0,0))),
+    ('SND', operation((0,1,0,1))),
+    ('XOR', operation((0,1,1,0))),
+    ('LOR', operation((0,1,1,1))),
+    ('NOR', operation((1,0,0,0))),
+    ('XNR', operation((1,0,0,1))),
+    ('NSD', operation((1,0,1,0))),
+    ('LIF', operation((1,0,1,1))),
+    ('NFT', operation((1,1,0,0))),
+    ('IMP', operation((1,1,0,1))),
+    ('NND', operation((1,1,1,0))),
+    ('TRU', operation((1,1,1,1)))
 ]
 
 # Concise synonym for class.
