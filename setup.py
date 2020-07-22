@@ -5,9 +5,9 @@ with open("README.rst", "r") as fh:
 
 setup(
     name="bfcl",
-    version="0.2.0",
+    version="0.3.0",
     packages=["bfcl",],
-    install_requires=["parts", "circuit",],
+    install_requires=["parts>=0.2.1", "circuit>=0.3.0",],
     license="MIT",
     url="https://github.com/nthparty/bfcl",
     author="Andrei Lapets",

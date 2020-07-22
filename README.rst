@@ -4,7 +4,7 @@ bfcl
 
 Bristol Fashion Circuit Library (BFCL) for working with circuit definitions represented using the Bristol Fashion.
 
-|pypi| |travis|
+|pypi| |travis| |coveralls|
 
 .. |pypi| image:: https://badge.fury.io/py/bfcl.svg
    :target: https://badge.fury.io/py/bfcl
@@ -12,6 +12,9 @@ Bristol Fashion Circuit Library (BFCL) for working with circuit definitions repr
 
 .. |travis| image:: https://travis-ci.com/nthparty/bfcl.svg?branch=master
     :target: https://travis-ci.com/nthparty/bfcl
+
+.. |coveralls| image:: https://coveralls.io/repos/github/nthparty/bfcl/badge.svg?branch=master
+   :target: https://coveralls.io/github/nthparty/bfcl?branch=master
 
 Purpose
 -------
