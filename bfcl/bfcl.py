@@ -97,8 +97,11 @@ class circuit():
     >>> circuit_string.extend(['2 1 15 16 8 AND', '2 1 4 5 22 AND'])
     >>> circuit_string.extend(['2 1 6 7 23 AND', '2 1 22 23 9 AND'])
     >>> circuit_string.extend(['2 1 8 9 35 AND'])
+    >>> circuit_string = "\\n".join(circuit_string)
     >>> c = circuit()
-    >>> c.parse("\\n".join(circuit_string))
+    >>> c.parse(circuit_string)
+    >>> c.emit() == circuit_string
+    True
     >>> c.gate_count
     7
     >>> c.wire_count
@@ -232,7 +235,7 @@ class circuit():
         # Parse the individual gates.
         self.gate = [gate.parse(row) for row in rows[3:self.gate_count+3]]
 
-    def emit(self: circuit, progress) -> str:
+    def emit(self: circuit, progress=lambda _: _) -> str:
         """Emit a Bristol Fashion circuit definition."""
         lines = [
             [str(self.gate_count), str(self.wire_count)],
