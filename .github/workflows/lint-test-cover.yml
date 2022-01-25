@@ -1,0 +1,29 @@
+name: lint-test-cover
+on:
+  push
+jobs:
+  lint_test_cover:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.7', '3.8', '3.9']
+    name: "Python ${{ matrix.python-version }}"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Python.
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+      - name: Lint and test module.
+        run: |
+          pip install -U pylint coverage nose .
+          python -m pylint bfcl # Check against linting rules.
+          python -m nose --cover-erase # Test using nose.
+      - name: Publish coverage results.
+        run: |
+          pip install -U pylint coveralls
+          python -m coveralls --service=github # Submit to coveralls.
+        if: matrix.python-version == '3.8'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

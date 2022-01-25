@@ -4,14 +4,15 @@ bfcl
 
 Bristol Fashion Circuit Library (BFCL) for working with circuit definitions represented using the Bristol Fashion.
 
-|pypi| |travis| |coveralls|
+|pypi| |actions| |coveralls|
 
 .. |pypi| image:: https://badge.fury.io/py/bfcl.svg
    :target: https://badge.fury.io/py/bfcl
    :alt: PyPI version and link.
 
-.. |travis| image:: https://travis-ci.com/nthparty/bfcl.svg?branch=master
-    :target: https://travis-ci.com/nthparty/bfcl
+.. |actions| image:: https://github.com/nthparty/bfcl/workflows/lint-test-cover/badge.svg
+   :target: https://github.com/nthparty/bfcl/actions/workflows/lint-test-cover.yml
+   :alt: GitHub Actions status.
 
 .. |coveralls| image:: https://coveralls.io/repos/github/nthparty/bfcl/badge.svg?branch=master
    :target: https://coveralls.io/github/nthparty/bfcl?branch=master
