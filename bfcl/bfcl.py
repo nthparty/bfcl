@@ -213,12 +213,12 @@ class circuit():
             list(range(self.wire_count - self.wire_out_count, self.wire_count))
 
         self.gate = []
-        for i in range(len(c.gate)):
-            if len(c.gate[i].inputs) > 0:
+        for g in c.gate:
+            if len(g.inputs) > 0:
                 self.gate.append(gate(
-                    len(c.gate[i].inputs), 1,
-                    [ig.index for ig in c.gate[i].inputs], [c.gate[i].index],
-                    operation(c.gate[i].operation)
+                    len(g.inputs), 1,
+                    [ig.index for ig in g.inputs], [g.index],
+                    operation(g.operation)
                 ))
 
     def parse(self: circuit, raw: str):
