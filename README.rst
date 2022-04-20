@@ -14,8 +14,8 @@ Bristol Fashion Circuit Library (BFCL) for working with circuit definitions repr
    :target: https://github.com/nthparty/bfcl/actions/workflows/lint-test-cover.yml
    :alt: GitHub Actions status.
 
-.. |coveralls| image:: https://coveralls.io/repos/github/nthparty/bfcl/badge.svg?branch=master
-   :target: https://coveralls.io/github/nthparty/bfcl?branch=master
+.. |coveralls| image:: https://coveralls.io/repos/github/nthparty/bfcl/badge.svg?branch=main
+   :target: https://coveralls.io/github/nthparty/bfcl?branch=main
 
 Purpose
 -------
