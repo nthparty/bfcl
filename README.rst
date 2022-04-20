@@ -10,8 +10,8 @@ Bristol Fashion Circuit Library (BFCL) for working with circuit definitions repr
    :target: https://badge.fury.io/py/bfcl
    :alt: PyPI version and link.
 
-.. |actions| image:: https://github.com/nthparty/bfcl/workflows/lint-test-cover/badge.svg
-   :target: https://github.com/nthparty/bfcl/actions/workflows/lint-test-cover.yml
+.. |actions| image:: https://github.com/nthparty/bfcl/workflows/lint-test-cover-docs/badge.svg
+   :target: https://github.com/nthparty/bfcl/actions/workflows/lint-test-cover-docs.yml
    :alt: GitHub Actions status.
 
 .. |coveralls| image:: https://coveralls.io/repos/github/nthparty/bfcl/badge.svg?branch=main

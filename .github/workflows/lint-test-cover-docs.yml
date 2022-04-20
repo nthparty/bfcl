@@ -1,8 +1,8 @@
-name: lint-test-cover
+name: lint-test-cover-docs
 on:
   push
 jobs:
-  lint_test_cover:
+  lint_test_cover_docs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -27,3 +27,7 @@ jobs:
         if: matrix.python-version == '3.8'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Test auto-generation of documentation.
+        run: |
+          pip install -U -r docs/requirements.txt
+          cd docs && sphinx-apidoc -f -E --templatedir=_templates -o _source .. ../setup.py && make html && cd ..
