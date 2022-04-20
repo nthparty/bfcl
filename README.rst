@@ -34,9 +34,10 @@ The library can be imported in the usual way::
 
 Testing and Conventions
 -----------------------
-All unit tests are executed and their coverage is measured when using `nose <https://nose.readthedocs.io/>`_ (see ``setup.cfg`` for configution details)::
+All unit tests are executed and their coverage is measured when using `pytest <https://docs.pytest.org/>`_ (see ``setup.cfg`` for configuration details)::
 
-    nosetests
+    python -m pip install pytest pytest-cov
+    python -m pytest
 
 Alternatively, all unit tests are included in the module itself and can be executed using `doctest <https://docs.python.org/3/library/doctest.html>`_::
 
@@ -44,7 +45,8 @@ Alternatively, all unit tests are included in the module itself and can be execu
 
 Style conventions are enforced using `Pylint <https://www.pylint.org/>`_::
 
-    pylint bfcl
+    python -m pip install pylint
+    python -m pylint bfcl
 
 Contributions
 -------------
@@ -53,3 +55,16 @@ In order to contribute to the source code, open an issue or submit a pull reques
 Versioning
 ----------
 Beginning with version 0.2.0, the version number format for this library and the changes to the library associated with version number increments conform with `Semantic Versioning 2.0.0 <https://semver.org/#semantic-versioning-200>`_.
+
+Publishing
+----------
+This library can be published as a `package on PyPI <https://pypi.org/project/bfcl/>`_ by a package maintainer. Install the `wheel <https://pypi.org/project/wheel/>`_ package, remove any old build/distribution files, and package the source into a distribution archive::
+
+    python -m pip install wheel
+    rm -rf dist *.egg-info
+    python setup.py sdist bdist_wheel
+
+Next, install the `twine <https://pypi.org/project/twine/>`_ package and upload the package distribution archive to PyPI::
+
+    python -m pip install twine
+    python -m twine upload dist/*
