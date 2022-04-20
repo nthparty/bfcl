@@ -21,6 +21,16 @@ Purpose
 -------
 This library includes data structures and associated methods for working with logical circuits typically used in secure multi-party computation (MPC) applications. The data structures follow in their organization the `Bristol Fashion <https://homes.esat.kuleuven.be/~nsmart/MPC/>`_ format, extrapolating and generalizing where necessary in order to support a wider variety of features and operations.
 
+Documentation
+-------------
+.. include:: toc.rst
+
+The documentation can be generated automatically from the source files using `Sphinx <https://www.sphinx-doc.org/>`_::
+
+    cd docs
+    python -m pip install -r requirements.txt
+    sphinx-apidoc -f -E --templatedir=_templates -o _source .. ../setup.py && make html
+
 Package Installation and Usage
 ------------------------------
 The package is available on PyPI::
