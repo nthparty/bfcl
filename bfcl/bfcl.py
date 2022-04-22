@@ -1,9 +1,7 @@
-"""Circuit definition data structures.
-
+"""
 Python library for working with circuit definitions
 represented using the Bristol Fashion.
 """
-
 from __future__ import annotations
 from typing import Sequence
 import doctest
@@ -12,16 +10,31 @@ import circuit as circuit_
 
 class operation(circuit_.operation):
     """
-    Data structure for an individual gate operation.
+    Data structure for an individual gate operation. See the documentation for the
+    `logical <https://pypi.org/project/logical/>`_ library for more information on
+    this data structure and how logical operations are represented as tuples of
+    integers.
     """
+    token_op_pairs = []
+    """List of pairs of string representations and corresponding unary/binary operations."""
 
     @staticmethod
     def parse(token: str) -> operation:
-        """Parse a Bristol Fashion circuit gate operator token."""
+        """
+        Parse a Bristol Fashion circuit gate operator token.
+
+        >>> operation.parse('AND')
+        (0, 0, 0, 1)
+        """
         return dict(operation.token_op_pairs).get(token.upper().strip())
 
     def emit(self: operation) -> str:
-        """Emit a Bristol Fashion operation token."""
+        """
+        Emit a Bristol Fashion operation token.
+
+        >>> operation((0, 1, 1, 0)).emit()
+        'XOR'
+        """
         return [s for (s, o) in operation.token_op_pairs if o == self][0]
 
 operation.token_op_pairs = [
@@ -57,7 +70,6 @@ class gate():
     >>> gate.parse('1 1 100 200 INV').emit()
     '1 1 100 200 INV'
     """
-
     def __init__(
             self: gate,
             wire_in_count: int = None, wire_out_count: int = None,
@@ -73,7 +85,9 @@ class gate():
 
     @staticmethod
     def parse(tokens) -> gate:
-        """Parse a Bristol Fashion gate string or token list."""
+        """
+        Parse a Bristol Fashion gate string or token list.
+        """
         if isinstance(tokens, str):
             tokens = [tok.strip() for tok in tokens.strip().split(" ")]
 
@@ -85,7 +99,9 @@ class gate():
         )
 
     def emit(self: gate) -> str:
-        """Emit a Bristol Fashion string for this gate."""
+        """
+        Emit a Bristol Fashion string for this gate.
+        """
         return " ".join([
             str(self.wire_in_count), str(self.wire_out_count),
             " ".join([str(i) for i in self.wire_in_index]),
@@ -95,7 +111,9 @@ class gate():
 
 class circuit():
     """
-    Data structure for circuits.
+    Data structure for circuits represented using the Bristol Fashion.
+    A string representing a circuit that conforms to the Bristol Fashion
+    syntax can be parsed into an instance of this class.
 
     >>> circuit_string = ['7 36', '2 4 4', '1 1']
     >>> circuit_string.extend(['2 1 0 1 15 AND', '2 1 2 3 16 AND'])
@@ -104,8 +122,28 @@ class circuit():
     >>> circuit_string.extend(['2 1 8 9 35 AND'])
     >>> circuit_string = "\\n".join(circuit_string)
     >>> c = circuit(circuit_string)
+
+    The string representation can be recovered from an instance of this
+    class, as well.
+
     >>> c.emit() == circuit_string
     True
+    >>> for line in c.emit().split("\\n"):
+    ...     print(line)
+    7 36
+    2 4 4
+    1 1
+    2 1 0 1 15 AND
+    2 1 2 3 16 AND
+    2 1 15 16 8 AND
+    2 1 4 5 22 AND
+    2 1 6 7 23 AND
+    2 1 22 23 9 AND
+    2 1 8 9 35 AND
+
+    Common properties of the circuit can be found in the attributes of
+    an instance.
+
     >>> c.gate_count
     7
     >>> c.wire_count
@@ -124,6 +162,10 @@ class circuit():
     1
     >>> c.wire_out_index
     [35]
+
+    The individual gates are stored within a list consisting of zero or
+    more instances of the :obj:`gate` class.
+
     >>> (c.gate[0].wire_in_index, c.gate[0].wire_out_index)
     ([0, 1], [15])
     >>> (c.gate[1].wire_in_index, c.gate[1].wire_out_index)
@@ -140,14 +182,17 @@ class circuit():
     ([8, 9], [35])
     >>> {c.gate[i].operation for i in range(7)} == {op.and_}
     True
+
+    A circuit can also be evaluated an on a sequence of input bit vectors
+    using the :obj:`circuit.evaluate` method.
+
     >>> from itertools import product
-    >>> inputs = list(product(*([[0,1]]*4)))
+    >>> inputs = list(product(*([[0, 1]]*4)))
     >>> pairs = product(inputs, inputs)
     >>> outputs = ([0]*255) + [1]
     >>> [c.evaluate(p)[0][0] for p in pairs] == outputs
     True
     """
-
     def __init__(self: circuit, raw=None):
         """Initialize a circuit data structure instance."""
         self.gate_count = 0
@@ -174,7 +219,9 @@ class circuit():
 
     def circuit(self: circuit, c: circuit_.circuit):
         """
-        Construct a Bristol Fashion circuit from `circuit` library object.
+        Populate this Bristol Fashion circuit instance using an instance of a circuit
+        that is constructed using the `circuit <https://pypi.org/project/circuit/>`_
+        library.
 
         >>> c_ = circuit_.circuit()
         >>> c_.count()
@@ -222,7 +269,31 @@ class circuit():
                 ))
 
     def parse(self: circuit, raw: str):
-        """Parse a Bristol Fashion string representation of a circuit."""
+        """
+        Parse a string representation of a circuit that conforms to the Bristol
+        Fashion syntax.
+
+        >>> s = ['7 36', '2 4 4', '1 1']
+        >>> s.extend(['2 1 0 1 15 AND', '2 1 2 3 16 AND'])
+        >>> s.extend(['2 1 15 16 8 AND', '2 1 4 5 22 AND'])
+        >>> s.extend(['2 1 6 7 23 AND', '2 1 22 23 9 AND'])
+        >>> s.extend(['2 1 8 9 35 AND'])
+        >>> s = "\\n".join(s)
+        >>> c = circuit()
+        >>> c.parse(s)
+        >>> for line in c.emit().split("\\n"):
+        ...     print(line)
+        7 36
+        2 4 4
+        1 1
+        2 1 0 1 15 AND
+        2 1 2 3 16 AND
+        2 1 15 16 8 AND
+        2 1 4 5 22 AND
+        2 1 6 7 23 AND
+        2 1 22 23 9 AND
+        2 1 8 9 35 AND
+        """
         rows = [
             [tok.strip() for tok in r.strip().split(" ")]
             for r in raw.split("\n") if r.strip() != ""
@@ -255,7 +326,31 @@ class circuit():
         self.gate = [gate.parse(row) for row in rows[3:self.gate_count+3]]
 
     def emit(self: circuit, progress=lambda _: _) -> str:
-        """Emit a Bristol Fashion circuit definition."""
+        """
+        Emit a string representation of a Bristol Fashion circuit definition.
+
+        In the example below, a circuit object is first constructed using the
+        `circuit <https://pypi.org/project/circuit/>`_ library.
+
+        >>> c_ = circuit_.circuit()
+        >>> c_.count()
+        0
+        >>> g0 = c_.gate(op.id_, is_input=True)
+        >>> g1 = c_.gate(op.id_, is_input=True)
+        >>> g2 = c_.gate(op.and_, [g0, g1])
+        >>> g3 = c_.gate(op.id_, [g2], is_output=True)
+
+        The ``c_`` object above can be converted into an instance of the
+        class :obj:`circuit`.
+
+        >>> c = circuit(c_)
+
+        This method can be used to emit a string representation of an object,
+        where the string conforms to the Bristol Fashion syntax.
+
+        >>> c.emit().split("\\n")
+        ['2 4', '1 2', '1 1', '2 1 0 1 2 AND', '1 1 2 3 LID']
+        """
         lines = [
             [str(self.gate_count), str(self.wire_count)],
             [str(self.value_in_count)] + list(map(str, self.value_in_length)),
@@ -268,8 +363,31 @@ class circuit():
             self: circuit,
             inputs: Sequence[Sequence[int]]
         ) -> Sequence[Sequence[int]]:
-        """Evaluate a circuit on a sequence of input bit vectors."""
+        """
+        Evaluate a circuit on a sequence of input bit vectors.
 
+        >>> s = ['7 36', '2 4 4', '1 1']
+        >>> s.extend(['2 1 0 1 15 AND', '2 1 2 3 16 AND'])
+        >>> s.extend(['2 1 15 16 8 AND', '2 1 4 5 22 AND'])
+        >>> s.extend(['2 1 6 7 23 AND', '2 1 22 23 9 AND'])
+        >>> s.extend(['2 1 8 9 35 AND'])
+        >>> c = circuit("\\n".join(s))
+        >>> c.evaluate([[1, 0, 1, 1], [1, 1, 1, 0]])
+        [[0]]
+        >>> c.evaluate([[1, 1, 1, 1], [1, 1, 1, 1]])
+        [[1]]
+
+        The example below confirms that the circuit ``c`` defined above has correct
+        behavior when evaluated on all compatible inputs (*i.e.*, inputs consisting
+        of a pair of 4-bit vectors).
+
+        >>> from itertools import product
+        >>> inputs = list(product(*([[0, 1]]*4)))
+        >>> pairs = product(inputs, inputs)
+        >>> outputs = ([0]*255) + [1]
+        >>> [c.evaluate(p)[0][0] for p in pairs] == outputs
+        True
+        """
         # It is assumed that the number of input wires in the circuit matches
         # the total number of bits across all inputs in the inputs vector.
         inputs = [b for bs in inputs for b in bs]

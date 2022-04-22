@@ -1,2 +1,2 @@
-"""Allow users to work with data structures directly."""
+"""Gives users direct access to classes."""
 from bfcl.bfcl import operation, op, gate, circuit
