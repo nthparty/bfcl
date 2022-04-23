@@ -5,13 +5,16 @@ with open("README.rst", "r") as fh:
 
 # The lines below are parsed by `docs/conf.py`.
 name = "bfcl"
-version = "0.3.0"
+version = "1.0.0"
 
 setup(
     name=name,
     version=version,
     packages=[name,],
-    install_requires=["parts>=0.2.1", "circuit>=0.3.0",],
+    install_requires=[
+        "parts~=1.3",
+        "circuit~=0.5"
+    ],
     license="MIT",
     url="https://github.com/nthparty/bfcl",
     author="Andrei Lapets",

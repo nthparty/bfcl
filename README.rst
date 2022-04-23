@@ -26,16 +26,6 @@ Purpose
 -------
 This library includes data structures and associated methods for working with logical circuits typically used in secure multi-party computation (MPC) applications. The data structures follow in their organization the `Bristol Fashion <https://homes.esat.kuleuven.be/~nsmart/MPC/>`_ format, extrapolating and generalizing where necessary in order to support a wider variety of features and operations.
 
-Documentation
--------------
-.. include:: toc.rst
-
-The documentation can be generated automatically from the source files using `Sphinx <https://www.sphinx-doc.org/>`_::
-
-    cd docs
-    python -m pip install -r requirements.txt
-    sphinx-apidoc -f -E --templatedir=_templates -o _source .. ../setup.py && make html
-
 Package Installation and Usage
 ------------------------------
 The package is available on PyPI::
@@ -46,6 +36,59 @@ The library can be imported in the usual way::
 
     import bfcl
     from bfcl import *
+
+This library makes it possible to parse a circuit definition that conforms to the Bristol Fashion syntax::
+
+    >>> ss = ['7 36', '2 4 4', '1 1']
+    >>> ss += ['2 1 0 1 15 AND', '2 1 2 3 16 AND']
+    >>> ss += ['2 1 15 16 8 AND', '2 1 4 5 22 AND']
+    >>> ss += ['2 1 6 7 23 AND', '2 1 22 23 9 AND']
+    >>> ss += ['2 1 8 9 35 AND']
+    >>> c = circuit('\n'.join(ss))
+
+A string representation that conforms to the Bristol Fashion syntax can be emitted::
+
+    >>> for line in c.emit().split('\n'):
+	...     print(line)
+	...
+	7 36
+	2 4 4
+	1 1
+	2 1 0 1 15 AND
+	2 1 2 3 16 AND
+	2 1 15 16 8 AND
+	2 1 4 5 22 AND
+	2 1 6 7 23 AND
+	2 1 22 23 9 AND
+	2 1 8 9 35 AND
+
+It is possible to evaluate a circuit on a sequence of input bit vectors. The circuit defined in the example above takes two 4-bit input vectors and returns the logical conjunction of all the bits. In the example below, it is evaluated on a few pairs of input bit vectors. The result is organized into a list of output bit vectors according to the original circuit definition (in the example below, the result consists of only a single output bit vector that contains a single bit)::
+
+	>>> c.evaluate([[1, 0, 1, 1], [1, 1, 1, 0]])
+	[[0]]
+	>>> c.evaluate([[1, 1, 1, 1], [1, 1, 1, 1]])
+	[[1]]
+
+As an alternative to using a string representation to define a circuit, it is also possible to construct a circuit using the `circuit <https://pypi.org/project/circuit/>`_ library. In the example below, the constructor for the ``circuit`` class found in the `bfcl <https://pypi.org/project/bfcl/>`_ library is applied to an object built using the classes and methods exported by the `circuit <https://pypi.org/project/circuit/>`_ library (note the use of a synonym to avoid a conflict with the ``circuit`` class defined in the `bfcl <https://pypi.org/project/bfcl/>`_ library)::
+
+	>>> import circuit as circuit_
+	>>> c = circuit_.circuit()
+	>>> g0 = c.gate(circuit_.op.id_, is_input=True)
+	>>> g1 = c.gate(circuit_.op.id_, is_input=True)
+	>>> g2 = c.gate(circuit_.op.and_, [g0, g1])
+	>>> g3 = c.gate(circuit_.op.id_, [g2], is_output=True)
+	>>> circuit(c).emit().split('\n')
+	['2 4', '1 2', '1 1', '2 1 0 1 2 AND', '1 1 2 3 LID']
+
+Documentation
+-------------
+.. include:: toc.rst
+
+The documentation can be generated automatically from the source files using `Sphinx <https://www.sphinx-doc.org/>`_::
+
+    cd docs
+    python -m pip install -r requirements.txt
+    sphinx-apidoc -f -E --templatedir=_templates -o _source .. ../setup.py && make html
 
 Testing and Conventions
 -----------------------
