@@ -28,7 +28,7 @@ This library includes data structures and associated methods for working with lo
 
 Package Installation and Usage
 ------------------------------
-The package is available on PyPI::
+The package is available on `PyPI <https://pypi.org/project/bfcl>`_::
 
     python -m pip install bfcl
 
@@ -69,7 +69,11 @@ It is possible to evaluate a circuit on a sequence of input bit vectors. The cir
 	>>> c.evaluate([[1, 1, 1, 1], [1, 1, 1, 1]])
 	[[1]]
 
-As an alternative to using a string representation to define a circuit, it is also possible to construct a circuit using the `circuit <https://pypi.org/project/circuit/>`_ library. In the example below, the constructor for the ``circuit`` class found in the `bfcl <https://pypi.org/project/bfcl/>`_ library is applied to an object built using the classes and methods exported by the `circuit <https://pypi.org/project/circuit/>`_ library (note the use of a synonym to avoid a conflict with the ``circuit`` class defined in the `bfcl <https://pypi.org/project/bfcl/>`_ library)::
+
+.. |circuit_| replace:: ``circuit``
+.. _circuit_: https://bfcl.readthedocs.io/en/latest/_source/bfcl.html#bfcl.bfcl.circuit
+
+As an alternative to using a string representation to define a circuit, it is also possible to construct a circuit using the `circuit <https://pypi.org/project/circuit>`_ library. In the example below, the constructor for the |circuit_|_ class found in the `bfcl <https://pypi.org/project/bfcl>`_ library is applied to an object built using the classes and methods exported by the `circuit <https://pypi.org/project/circuit>`_ library (note the use of a synonym to avoid a conflict with the |circuit_|_ class defined in the `bfcl <https://pypi.org/project/bfcl>`_ library)::
 
 	>>> import circuit as circuit_
 	>>> c = circuit_.circuit()
@@ -108,7 +112,7 @@ Style conventions are enforced using `Pylint <https://www.pylint.org/>`_::
 
 Contributions
 -------------
-In order to contribute to the source code, open an issue or submit a pull request on the GitHub page for this library.
+In order to contribute to the source code, open an issue or submit a pull request on the `GitHub page <https://github.com/nthparty/bfcl>`_ for this library.
 
 Versioning
 ----------
@@ -116,13 +120,13 @@ Beginning with version 0.2.0, the version number format for this library and the
 
 Publishing
 ----------
-This library can be published as a `package on PyPI <https://pypi.org/project/bfcl/>`_ by a package maintainer. Install the `wheel <https://pypi.org/project/wheel/>`_ package, remove any old build/distribution files, and package the source into a distribution archive::
+This library can be published as a `package on PyPI <https://pypi.org/project/bfcl>`_ by a package maintainer. Install the `wheel <https://pypi.org/project/wheel>`_ package, remove any old build/distribution files, and package the source into a distribution archive::
 
     python -m pip install wheel
     rm -rf dist *.egg-info
     python setup.py sdist bdist_wheel
 
-Next, install the `twine <https://pypi.org/project/twine/>`_ package and upload the package distribution archive to PyPI::
+Next, install the `twine <https://pypi.org/project/twine>`_ package and upload the package distribution archive to PyPI::
 
     python -m pip install twine
     python -m twine upload dist/*

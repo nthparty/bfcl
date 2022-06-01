@@ -10,10 +10,15 @@ import circuit as circuit_
 
 class operation(circuit_.operation):
     """
-    Data structure for an individual gate operation. See the documentation for the
-    `logical <https://pypi.org/project/logical/>`_ library for more information on
-    this data structure and how logical operations are represented as tuples of
-    integers.
+    Data structure for an individual gate operation. This class is derived
+    from the :obj:`~logical.logical.logical` class exported by the
+    `logical <https://pypi.org/project/logical/>`_ library. This module
+    indirectly imports the :obj:`~logical.logical.logical` class via the
+    :obj:`~circuit.circuit.op` synonym defined in the
+    `circuit <https://pypi.org/project/circuit/>`_ library. See the
+    documentation for the :obj:`~logical.logical.logical` class
+    for more information on this data structure and how logical operations
+    are represented as tuples of integers.
     """
     token_op_pairs = []
     """List of pairs of string representations and corresponding unary/binary operations."""
@@ -141,6 +146,12 @@ class circuit():
     2 1 22 23 9 AND
     2 1 8 9 35 AND
 
+    A circuit can also be consructed using an instance of the
+    :obj:`~circuit.circuit.circuit` class defined in the
+    `circuit <https://pypi.org/project/circuit/>`_ library (see the
+    documentation for the :obj:`circuit.circuit` method defined as part of
+    this class).
+
     Common properties of the circuit can be found in the attributes of
     an instance.
 
@@ -219,9 +230,9 @@ class circuit():
 
     def circuit(self: circuit, c: circuit_.circuit):
         """
-        Populate this Bristol Fashion circuit instance using an instance of a circuit
-        that is constructed using the `circuit <https://pypi.org/project/circuit/>`_
-        library.
+        Populate this Bristol Fashion circuit instance using an instance of the
+        :obj:`~circuit.circuit.circuit` class defined in the
+        `circuit <https://pypi.org/project/circuit/>`_ library.
 
         >>> c_ = circuit_.circuit()
         >>> c_.count()
