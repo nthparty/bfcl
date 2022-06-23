@@ -3,7 +3,7 @@ Python library for working with circuit definitions
 represented using the Bristol Fashion.
 """
 from __future__ import annotations
-from typing import Sequence, Union
+from typing import Sequence, Union, Type
 import doctest
 from parts import parts
 import circuit as circuit_
@@ -228,7 +228,7 @@ class bfc():
         elif isinstance(raw, circuit_.circuit):
             self.circuit(raw)
 
-    def circuit(self: bfc, c: circuit_.circuit=None) -> Union[bfc, circuit_.circuit]:
+    def circuit(self: bfc, c: circuit_.circuit=None) -> Union[Type[None], circuit_.circuit]:
         """
         Populate this Bristol Fashion circuit instance using an instance of the
         :obj:`~circuit.circuit.circuit` class defined in the
@@ -282,45 +282,39 @@ class bfc():
                         [ig.index for ig in g.inputs], [g.index],
                         operation(g.operation)
                     ))
-            return self  # We really don't need this, but it may be good for the type checking.
-        else:
-            input_format = self.value_in_length
-            output_format = self.value_out_length
-            c = circuit_.circuit(circuit_.signature(input_format, output_format))
-            # c.gate()
-            # c.gate = self.gate
+            return None
+        #else if (c == None):
+        input_format = self.value_in_length
+        output_format = self.value_out_length
+        c = circuit_.circuit(circuit_.signature(input_format, output_format))
 
-            # input_gates = self.gate[:self.wire_in_count]
-            # intermediate_gates = self.gate[self.wire_in_count:-self.wire_out_count]
-            # output_gates = self.gate[-self.wire_out_count:]
-            # input_gates = []
-            intermediate_gates = self.gate[:-self.wire_out_count]
-            output_gates = self.gate[-self.wire_out_count:]
-            all_gates = []
-            for _g in range(self.wire_in_count):#input_gates:
-                all_gates.append(
-                    c.gate(
-                        circuit_.op.id_,
-                        is_input=True
-                    )
+        intermediate_gates = self.gate[:-self.wire_out_count]
+        output_gates = self.gate[-self.wire_out_count:]
+        all_gates = []
+        for _g in range(self.wire_in_count):#input_gates:
+            all_gates.append(
+                c.gate(
+                    circuit_.op.id_,
+                    is_input=True
                 )
-            for g in intermediate_gates:
-                all_gates.append(
-                    c.gate(
-                        g.operation,
-                        list(map(lambda i : all_gates[i], g.wire_in_index))
-                    )
+            )
+        for g in intermediate_gates:
+            all_gates.append(
+                c.gate(
+                    g.operation,
+                    list(map(lambda i : all_gates[i], g.wire_in_index))
                 )
-            for g in output_gates:
-                all_gates.append(
-                    c.gate(
-                        g.operation,  # This should always be `circuit_.op.id_`.
-                        list(map(lambda i : all_gates[i], g.wire_in_index)),
-                        is_output=True
-                    )
+            )
+        for g in output_gates:
+            all_gates.append(
+                c.gate(
+                    g.operation,  # This should always be `circuit_.op.id_`.
+                    list(map(lambda i : all_gates[i], g.wire_in_index)),
+                    is_output=True
                 )
+            )
 
-            return c
+        return c
 
     def parse(self: circuit, raw: str):
         """
