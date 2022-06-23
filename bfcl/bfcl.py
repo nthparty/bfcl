@@ -3,7 +3,7 @@ Python library for working with circuit definitions
 represented using the Bristol Fashion.
 """
 from __future__ import annotations
-from typing import Sequence
+from typing import Sequence, Union
 import doctest
 from parts import parts
 import circuit as circuit_
@@ -228,7 +228,7 @@ class bfc():
         elif isinstance(raw, circuit_.circuit):
             self.circuit(raw)
 
-    def circuit(self: bfc, c: circuit_.circuit):
+    def circuit(self: bfc, c: circuit_.circuit=None) -> Union[bfc, circuit_.circuit]:
         """
         Populate this Bristol Fashion circuit instance using an instance of the
         :obj:`~circuit.circuit.circuit` class defined in the
@@ -246,38 +246,81 @@ class bfc():
         >>> c = bfc(c_)
         >>> c.emit().split("\\n")
         ['2 4', '1 2', '1 1', '2 1 0 1 2 AND', '1 1 2 3 LID']
+        >>> c_reparsed = bfc(bfc(c_).circuit())
+        >>> c_reparsed.emit().split("\\n")
+        ['2 4', '1 2', '1 1', '2 1 0 1 2 AND', '1 1 2 3 LID']
         """
-        sig = c.signature
-        self.gate_count =\
-            c.count(lambda g: not (len(g.inputs) == 0 and len(g.outputs) > 0))
-        self.wire_count = len(c.gate)
-        self.value_in_count =\
-            1 if sig.input_format is None else len(sig.input_format)
-        self.value_in_length =\
-            [self.wire_count - self.gate_count]\
-            if sig.input_format is None else\
-            sig.input_format
-        self.value_out_count =\
-            1 if sig.output_format is None else len(sig.output_format)
-        self.value_out_length =\
-            [c.count(lambda g: len(g.outputs) == 0)]\
-            if sig.output_format is None else\
-            sig.output_format
+        if c:
+            sig = c.signature
+            self.gate_count =\
+                c.count(lambda g: not (len(g.inputs) == 0 and len(g.outputs) > 0))
+            self.wire_count = len(c.gate)
+            self.value_in_count =\
+                1 if sig.input_format is None else len(sig.input_format)
+            self.value_in_length =\
+                [self.wire_count - self.gate_count]\
+                if sig.input_format is None else\
+                sig.input_format
+            self.value_out_count =\
+                1 if sig.output_format is None else len(sig.output_format)
+            self.value_out_length =\
+                [c.count(lambda g: len(g.outputs) == 0)]\
+                if sig.output_format is None else\
+                sig.output_format
 
-        self.wire_in_count = self.wire_count - self.gate_count
-        self.wire_in_index = list(range(0, self.wire_in_count))
-        self.wire_out_count = c.count(lambda g: len(g.outputs) == 0)
-        self.wire_out_index =\
-            list(range(self.wire_count - self.wire_out_count, self.wire_count))
+            self.wire_in_count = self.wire_count - self.gate_count
+            self.wire_in_index = list(range(0, self.wire_in_count))
+            self.wire_out_count = c.count(lambda g: len(g.outputs) == 0)
+            self.wire_out_index =\
+                list(range(self.wire_count - self.wire_out_count, self.wire_count))
 
-        self.gate = []
-        for g in c.gate:
-            if len(g.inputs) > 0:
-                self.gate.append(gate(
-                    len(g.inputs), 1,
-                    [ig.index for ig in g.inputs], [g.index],
-                    operation(g.operation)
-                ))
+            self.gate = []
+            for g in c.gate:
+                if len(g.inputs) > 0:
+                    self.gate.append(gate(
+                        len(g.inputs), 1,
+                        [ig.index for ig in g.inputs], [g.index],
+                        operation(g.operation)
+                    ))
+            return self  # We really don't need this, but it may be good for the type checking.
+        else:
+            input_format = self.value_in_length
+            output_format = self.value_out_length
+            c = circuit_.circuit(circuit_.signature(input_format, output_format))
+            # c.gate()
+            # c.gate = self.gate
+
+            # input_gates = self.gate[:self.wire_in_count]
+            # intermediate_gates = self.gate[self.wire_in_count:-self.wire_out_count]
+            # output_gates = self.gate[-self.wire_out_count:]
+            # input_gates = []
+            intermediate_gates = self.gate[:-self.wire_out_count]
+            output_gates = self.gate[-self.wire_out_count:]
+            all_gates = []
+            for _g in range(self.wire_in_count):#input_gates:
+                all_gates.append(
+                    c.gate(
+                        circuit_.op.id_,
+                        is_input=True
+                    )
+                )
+            for g in intermediate_gates:
+                all_gates.append(
+                    c.gate(
+                        g.operation,
+                        list(map(lambda i : all_gates[i], g.wire_in_index))
+                    )
+                )
+            for g in output_gates:
+                all_gates.append(
+                    c.gate(
+                        g.operation,  # This should always be `circuit_.op.id_`.
+                        list(map(lambda i : all_gates[i], g.wire_in_index)),
+                        is_output=True
+                    )
+                )
+
+            return c
 
     def parse(self: circuit, raw: str):
         """
