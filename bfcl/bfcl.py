@@ -114,7 +114,7 @@ class gate():
             self.operation.emit()
         ])
 
-class circuit():
+class bfc():
     """
     Data structure for circuits represented using the Bristol Fashion.
     A string representing a circuit that conforms to the Bristol Fashion
@@ -126,7 +126,7 @@ class circuit():
     >>> circuit_string.extend(['2 1 6 7 23 AND', '2 1 22 23 9 AND'])
     >>> circuit_string.extend(['2 1 8 9 35 AND'])
     >>> circuit_string = "\\n".join(circuit_string)
-    >>> c = circuit(circuit_string)
+    >>> c = bfc(circuit_string)
 
     The string representation can be recovered from an instance of this
     class, as well.
@@ -195,7 +195,7 @@ class circuit():
     True
 
     A circuit can also be evaluated an on a sequence of input bit vectors
-    using the :obj:`circuit.evaluate` method.
+    using the :obj:`bfcl.evaluate` method.
 
     >>> from itertools import product
     >>> inputs = list(product(*([[0, 1]]*4)))
@@ -204,8 +204,8 @@ class circuit():
     >>> [c.evaluate(p)[0][0] for p in pairs] == outputs
     True
     """
-    def __init__(self: circuit, raw=None):
-        """Initialize a circuit data structure instance."""
+    def __init__(self: bfc, raw=None):
+        """Initialize a bfc data structure instance."""
         self.gate_count = 0
         self.wire_count = 0
         self.value_in_count = 0
@@ -228,7 +228,7 @@ class circuit():
         elif isinstance(raw, circuit_.circuit):
             self.circuit(raw)
 
-    def circuit(self: circuit, c: circuit_.circuit):
+    def circuit(self: bfc, c: circuit_.circuit):
         """
         Populate this Bristol Fashion circuit instance using an instance of the
         :obj:`~circuit.circuit.circuit` class defined in the
@@ -243,7 +243,7 @@ class circuit():
         >>> g3 = c_.gate(op.id_, [g2], is_output=True)
         >>> c_.count()
         4
-        >>> c = circuit(c_)
+        >>> c = bfc(c_)
         >>> c.emit().split("\\n")
         ['2 4', '1 2', '1 1', '2 1 0 1 2 AND', '1 1 2 3 LID']
         """
@@ -290,7 +290,7 @@ class circuit():
         >>> s.extend(['2 1 6 7 23 AND', '2 1 22 23 9 AND'])
         >>> s.extend(['2 1 8 9 35 AND'])
         >>> s = "\\n".join(s)
-        >>> c = circuit()
+        >>> c = bfc()
         >>> c.parse(s)
         >>> for line in c.emit().split("\\n"):
         ...     print(line)
@@ -354,7 +354,7 @@ class circuit():
         The ``c_`` object above can be converted into an instance of the
         class :obj:`circuit`.
 
-        >>> c = circuit(c_)
+        >>> c = bfc(c_)
 
         This method can be used to emit a string representation of an object,
         where the string conforms to the Bristol Fashion syntax.
@@ -382,7 +382,7 @@ class circuit():
         >>> s.extend(['2 1 15 16 8 AND', '2 1 4 5 22 AND'])
         >>> s.extend(['2 1 6 7 23 AND', '2 1 22 23 9 AND'])
         >>> s.extend(['2 1 8 9 35 AND'])
-        >>> c = circuit("\\n".join(s))
+        >>> c = bfc("\\n".join(s))
         >>> c.evaluate([[1, 0, 1, 1], [1, 1, 1, 0]])
         [[0]]
         >>> c.evaluate([[1, 1, 1, 1], [1, 1, 1, 1]])
