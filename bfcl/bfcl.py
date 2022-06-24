@@ -288,10 +288,11 @@ class bfc():
         output_format = self.value_out_length
         c = circuit_.circuit(circuit_.signature(input_format, output_format))
 
-        if all([self.gate[idx].operation == circuit_.op.id_ for idx in self.wire_in_index]) and \
-           all([self.gate[idx].operation == circuit_.op.id_ for idx in self.wire_out_index]):
-            intermediate_gates = self.gate[:-self.wire_out_count]
-            output_gates = self.gate[-self.wire_out_count:]
+        if self.wire_out_index[0] > self.gate_count:
+        # if all([self.gate[idx].operation == circuit_.op.id_ for idx in self.wire_in_index]) and \
+        #    all([self.gate[idx].operation == circuit_.op.id_ for idx in self.wire_out_index]):
+            intermediate_gates = self.gate[:]#-self.wire_out_count]
+            # output_gates = self.gate[-self.wire_out_count:]
             all_gates = []
             for _g in range(self.wire_in_count):#input_gates:
                 all_gates.append(
@@ -307,11 +308,11 @@ class bfc():
                         list(map(lambda i : all_gates[i], g.wire_in_index))
                     )
                 )
-            for g in output_gates:
+            for out_index in reversed(range(self.wire_out_count)):#output_gates:
                 all_gates.append(
                     c.gate(
-                        g.operation,  # This should always be `circuit_.op.id_`.
-                        list(map(lambda i : all_gates[i], g.wire_in_index)),
+                        circuit_.op.id_,
+                        [all_gates[-out_index]],  # (note: already reversed)  # TODO: check multple output-gate inputs
                         is_output=True
                     )
                 )
