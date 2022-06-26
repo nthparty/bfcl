@@ -289,13 +289,27 @@ class bfc():
         c = circuit_.circuit(circuit_.signature(input_format, output_format))
 
         if not (
-                # all(self.gate[wire_index].operation == circuit_.op.id_ for wire_index in self.wire_out_index) and
                 all(self.gate[gate_index].operation == circuit_.op.id_ for gate_index in
                                             range(self.gate_count - self.wire_out_count, self.gate_count)) and
                 self.wire_out_index == list(range(self.wire_count - self.wire_out_count, self.wire_count))
         ):
-            raise NotImplementedError("The bfcl library only supports converting to a circuit object for circuits"
-                                      " with in-order identity-gate outputs.")
+            #raise NotImplementedError("The bfcl library only supports converting to a circuit object for circuits"
+            #                          " with in-order identity-gate outputs.")
+            # Update circuit to new output format.
+            self.gate.extend(
+                [
+                    gate(
+                        1,
+                        1,
+                        [i - self.wire_out_count],
+                        [i],
+                        operation(circuit_.op.id_)  # operation.parse('LID')
+                    )
+                    for i in range(self.wire_count, self.wire_count + self.wire_out_count)
+                ]
+            )
+
+
 
         intermediate_gates = self.gate[:]
         output_gates = self.gate[-self.wire_out_count:]
@@ -386,7 +400,7 @@ class bfc():
         # Parse the individual gates.
         self.gate = [gate.parse(row) for row in rows[3:self.gate_count+3]]
 
-    def emit(self: circuit, progress=lambda _: _) -> str:
+    def emit(self: circuit, force_id_outputs=False, progress=lambda _: _) -> str:
         """
         Emit a string representation of a Bristol Fashion circuit definition.
 
@@ -411,13 +425,17 @@ class bfc():
 
         >>> c.emit().split("\\n")
         ['2 4', '1 2', '1 1', '2 1 0 1 2 AND', '1 1 2 3 LID']
+
+        >>> c.emit(True).split("\\n")
+        ['2 4', '1 2', '1 1', '2 1 0 1 2 AND', '1 1 2 3 LID']
         """
+        _self = bfc(self.circuit()) if force_id_outputs else self  # Temporarily post-process if flag is True.
         lines = [
-            [str(self.gate_count), str(self.wire_count)],
-            [str(self.value_in_count)] + list(map(str, self.value_in_length)),
-            [str(self.value_out_count)] + list(map(str, self.value_out_length))
+            [str(_self.gate_count), str(_self.wire_count)],
+            [str(_self.value_in_count)] + list(map(str, _self.value_in_length)),
+            [str(_self.value_out_count)] + list(map(str, _self.value_out_length))
         ]
-        lines.extend([[g.emit()] for g in progress(self.gate)])
+        lines.extend([[g.emit()] for g in progress(_self.gate)])
         return "\n".join(" ".join(line) for line in lines)
 
     def evaluate(
@@ -494,12 +512,28 @@ if __name__ == "__main__":
             c = bfc(file.read()).circuit()
             # print(name + ':\t' + str(c.count()) + '\t' + str(c.depth()))
             print(str(c.count()) + '    ' + str(c.depth()) + '    ' + name)
-            fd = open(path + '.txt', 'w')
+            fd = open(path, 'w')
             fd.write(bfc(c).emit())
             fd.close()
 
-    stat('compare-gteq-32-bit')
+    # stat('bristol/md5/md5-lteq-1464-bits')
     # import sys; sys.exit()
+
+    import sys; sys.setrecursionlimit(5000)
+    import os
+    from glob import glob
+    files = [y for x in os.walk('/Users/whowe/Downloads/bristol') for y in glob(os.path.join(x[0], '*.txt'))]
+    for file in files:
+        try:
+            stat(file[23:][:-4])
+        except:
+            print(file)
+        pass
+    import sys; sys.exit()
+
+
+    stat('compare-gteq-32-bit')
+    import sys; sys.exit()
 
     stat('arith-add-1-bit')
     stat('arith-add-2-bit')
