@@ -288,60 +288,44 @@ class bfc():
         output_format = self.value_out_length
         c = circuit_.circuit(circuit_.signature(input_format, output_format))
 
-        if self.wire_out_index[0] > self.gate_count:
-        # if all([self.gate[idx].operation == circuit_.op.id_ for idx in self.wire_in_index]) and \
-        #    all([self.gate[idx].operation == circuit_.op.id_ for idx in self.wire_out_index]):
-            intermediate_gates = self.gate[:]#-self.wire_out_count]
-            # output_gates = self.gate[-self.wire_out_count:]
-            all_gates = []
-            for _g in range(self.wire_in_count):#input_gates:
-                all_gates.append(
-                    c.gate(
-                        circuit_.op.id_,
-                        is_input=True
-                    )
+        if not (
+                # all(self.gate[wire_index].operation == circuit_.op.id_ for wire_index in self.wire_out_index) and
+                all(self.gate[gate_index].operation == circuit_.op.id_ for gate_index in
+                                            range(self.gate_count - self.wire_out_count, self.gate_count)) and
+                self.wire_out_index == list(range(self.wire_count - self.wire_out_count, self.wire_count))
+        ):
+            raise NotImplementedError("The bfcl library only supports converting to a circuit object for circuits"
+                                      " with in-order identity-gate outputs.")
+
+        intermediate_gates = self.gate[:]
+        output_gates = self.gate[-self.wire_out_count:]
+        wires = []
+        for _g in range(self.wire_in_count):#input_gates:
+            wires.append(
+                c.gate(
+                    circuit_.op.id_,
+                    is_input=True
                 )
-            for g in intermediate_gates:
-                all_gates.append(
-                    c.gate(
-                        g.operation,
-                        list(map(lambda i : all_gates[i], g.wire_in_index))
-                    )
-                )
-            for out_index in reversed(range(self.wire_out_count)):#output_gates:
-                all_gates.append(
-                    c.gate(
-                        circuit_.op.id_,
-                        [all_gates[-out_index]],  # (note: already reversed)  # TODO: check multple output-gate inputs
-                        is_output=True
-                    )
-                )
-        else:
-            intermediate_gates = self.gate[:]
-            output_gates = self.gate[-self.wire_out_count:]
-            all_gates = []
-            for _g in range(self.wire_in_count):#input_gates:
-                all_gates.append(
-                    c.gate(
-                        circuit_.op.id_,
-                        is_input=True
-                    )
-                )
-            for g in intermediate_gates:
-                all_gates.append(
-                    c.gate(
-                        g.operation,
-                        list(map(lambda i : all_gates[i], g.wire_in_index))
-                    )
-                )
-            for g in output_gates:
-                all_gates.append(
-                    c.gate(
-                        g.operation,  # This should always be `circuit_.op.id_`.
-                        list(map(lambda i : all_gates[i], g.wire_in_index)),
-                        is_output=True
-                    )
-                )
+            )
+        wires.extend([None] * len(intermediate_gates))
+        for g in intermediate_gates:
+            assert(len(g.wire_in_index) > 0)
+            assert(len(g.wire_out_index) > 0)
+            _g = c.gate(
+                g.operation,
+                list(map(lambda i : wires[i], g.wire_in_index))
+            )
+            for wire_out_index in g.wire_out_index:
+                assert(wire_out_index > self.wire_in_count - 1)  # Assert well ordering of inputs gates (to wires).
+                wires[wire_out_index] = _g
+        for g in output_gates:
+            assert(len(g.wire_in_index) > 0)
+            c.gate(
+                g.operation,  # This should always be `circuit_.op.id_`.
+                list(map(lambda i : wires[i], g.wire_in_index)),
+                is_output=True
+            )
+        c.prune_and_topological_sort_stable()
 
         return c
 
@@ -491,4 +475,105 @@ class bfc():
         ))
 
 if __name__ == "__main__":
+    # # with open('/Users/whowe/Downloads/sha-256-for-eq-512-bits.txt', 'r') as file:
+    # with open('/Users/whowe/Downloads/sha-256-for-lteq-440-bits.txt', 'r') as file:
+    # # with open('/Users/whowe/Downloads/arith-add-8-bit.txt', 'r') as file:
+    #     sha_bristol = file.read()
+    #     c = bfc(sha_bristol).circuit()
+    #     print(c.count())
+    #     import sys; sys.setrecursionlimit(731)
+    #     print(c.depth())
+    #     fd = open('/Users/whowe/Downloads/sha-256-for-lteq-440-bits_.txt', 'w')
+    #     fd.write(bfc(c).emit())
+    #     fd.close()
+    #     pass
+
+    def stat(name):
+        path = '/Users/whowe/Downloads/' + name + '.txt'
+        with open(path, 'r') as file:
+            c = bfc(file.read()).circuit()
+            # print(name + ':\t' + str(c.count()) + '\t' + str(c.depth()))
+            print(str(c.count()) + '    ' + str(c.depth()) + '    ' + name)
+            fd = open(path + '.txt', 'w')
+            fd.write(bfc(c).emit())
+            fd.close()
+
+    stat('compare-gteq-32-bit')
+    # import sys; sys.exit()
+
+    stat('arith-add-1-bit')
+    stat('arith-add-2-bit')
+    stat('arith-add-3-bit')
+    stat('arith-add-4-bit')
+    stat('arith-add-5-bit')
+    stat('arith-add-6-bit')
+    stat('arith-add-7-bit')
+    stat('arith-add-8-bit')
+    # import sys; sys.exit()
+
+    stat('sha256goldfederer')
+
+    import sys; sys.setrecursionlimit(5000)
+    stat('sha-256-for-lteq-952-bits')
+    stat('sha-256-for-lteq-440-bits')
+    stat('md5-lteq-952-bits')
+    stat('md5-lteq-440-bits')
+    stat('md5-lteq-1464-bits')
+    stat('aes-128-ecb-encrypt')
+    stat('aes-128-ecb-decrypt')
+    stat('arith-xmul-64-bit')
+    stat('arith-xadd-64-bit')
+    stat('arith-xadd-32-bit')
+    stat('arith-sub-8-bit')
+    stat('arith-sub-64-bit')
+    stat('arith-sub-32-bit-8-point')
+    stat('arith-sub-32-bit-32-point')
+    stat('arith-sub-32-bit-3-point')
+    stat('arith-sub-32-bit-16-point')
+    stat('arith-sub-32-bit')
+    stat('arith-sub-16-bit-16-point')
+    stat('arith-sub-16-bit')
+    stat('arith-osub-8-bit')
+    stat('arith-osub-64-bit')
+    stat('arith-osub-32-bit')
+    stat('arith-osub-16-bit')
+    stat('arith-omul-8-bit')
+    stat('arith-omul-64-bit')
+    stat('arith-omul-32-bit')
+    stat('arith-omul-31-bit')
+    stat('arith-omul-16-bit')
+    stat('arith-oadd-8-bit')
+    stat('arith-oadd-64-bit')
+    stat('arith-oadd-32-bit')
+    stat('arith-oadd-16-bit')
+    stat('arith-mul-8-bit')
+    stat('arith-mul-64-bit')
+    stat('arith-mul-32-bit-8-point')
+    stat('arith-mul-32-bit-32-point')
+    stat('arith-mul-32-bit-3-point')
+    stat('arith-mul-32-bit-16-point')
+    stat('arith-mul-32-bit')
+    stat('arith-mul-31-bit')
+    stat('arith-mul-16-bit-16-point')
+    stat('arith-mul-16-bit')
+    stat('arith-mod-32-bit-8-point')
+    stat('arith-mod-32-bit-32-point')
+    stat('arith-mod-32-bit-16-point')
+    stat('arith-max-32-bit')
+    stat('arith-div-8-bit')
+    stat('arith-div-64-bit')
+    stat('arith-div-32-bit-8-point')
+    stat('arith-div-32-bit-32-point')
+    stat('arith-div-32-bit-16-point')
+    stat('arith-div-32-bit')
+    stat('arith-add-8-bit')
+    stat('arith-add-64-bit')
+    stat('arith-add-32-bit-8-point')
+    stat('arith-add-32-bit-32-point')
+    stat('arith-add-32-bit-3-point')
+    stat('arith-add-32-bit-16-point')
+    stat('arith-add-32-bit')
+    stat('arith-add-16-bit-16-point')
+    stat('arith-add-16-bit')
+
     doctest.testmod() # pragma: no cover
