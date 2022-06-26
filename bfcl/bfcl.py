@@ -146,6 +146,24 @@ class bfc():
     2 1 22 23 9 AND
     2 1 8 9 35 AND
 
+    We could just add a '1 1 35 36 LID' line, and increment '8 16', but the
+    `force_id_outputs` is perhaps not as lazy as it could be and performs a
+    full `bfc`->`circuit_`->`bfc` conversion to get the identity gates,
+    hence the wire renumbering.
+    >>> for line in c.emit(force_id_outputs=True).split("\\n"):
+    ...     print(line)
+    8 16
+    2 4 4
+    1 1
+    2 1 0 1 8 AND
+    2 1 2 3 9 AND
+    2 1 8 9 10 AND
+    2 1 4 5 11 AND
+    2 1 6 7 12 AND
+    2 1 11 12 13 AND
+    2 1 10 13 14 AND
+    1 1 14 15 LID
+
     A circuit can also be consructed using an instance of the
     :obj:`~circuit.circuit.circuit` class defined in the
     `circuit <https://pypi.org/project/circuit/>`_ library (see the
@@ -288,6 +306,9 @@ class bfc():
         output_format = self.value_out_length
         c = circuit_.circuit(circuit_.signature(input_format, output_format))
 
+        self_gate = [g for g in self.gate]
+        # Don't mutate the real gate list (only protects from the `.extend` call in the `if` block).
+
         if not (
                 all(self.gate[gate_index].operation == circuit_.op.id_ for gate_index in
                                             range(self.gate_count - self.wire_out_count, self.gate_count)) and
@@ -296,7 +317,7 @@ class bfc():
             #raise NotImplementedError("The bfcl library only supports converting to a circuit object for circuits"
             #                          " with in-order identity-gate outputs.")
             # Update circuit to new output format.
-            self.gate.extend(
+            self_gate.extend(
                 [
                     gate(
                         1,
@@ -309,19 +330,14 @@ class bfc():
                 ]
             )
 
-
-
-        intermediate_gates = self.gate[:]
-        output_gates = self.gate[-self.wire_out_count:]
-        wires = []
-        for _g in range(self.wire_in_count):#input_gates:
-            wires.append(
-                c.gate(
-                    circuit_.op.id_,
-                    is_input=True
-                )
+        intermediate_gates = self_gate[:]
+        output_gates = self_gate[-self.wire_out_count:]
+        wires = {}
+        for wire_index in range(self.wire_in_count):#input_gates:
+            wires[wire_index] = c.gate(
+                circuit_.op.id_,
+                is_input=True
             )
-        wires.extend([None] * len(intermediate_gates))
         for g in intermediate_gates:
             assert(len(g.wire_in_index) > 0)
             assert(len(g.wire_out_index) > 0)
@@ -339,7 +355,7 @@ class bfc():
                 list(map(lambda i : wires[i], g.wire_in_index)),
                 is_output=True
             )
-        c.prune_and_topological_sort_stable()
+        c.prune_and_topological_sort_stable()  # really only need to prune chained identity gates
 
         return c
 
