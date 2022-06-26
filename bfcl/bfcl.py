@@ -306,16 +306,20 @@ class bfc():
         output_format = self.value_out_length
         c = circuit_.circuit(circuit_.signature(input_format, output_format))
 
-        self_gate = [g for g in self.gate]
+        self_gate = list(self.gate)
         # Don't mutate the real gate list (only protects from the `.extend` call in the `if` block).
 
         if not (
                 all(self.gate[gate_index].operation == circuit_.op.id_ for gate_index in
-                                            range(self.gate_count - self.wire_out_count, self.gate_count)) and
-                self.wire_out_index == list(range(self.wire_count - self.wire_out_count, self.wire_count))
+                    range(self.gate_count - self.wire_out_count, self.gate_count))
+                and self.wire_out_index == list(
+                    range(self.wire_count - self.wire_out_count, self.wire_count)
+                )
         ):
-            #raise NotImplementedError("The bfcl library only supports converting to a circuit object for circuits"
-            #                          " with in-order identity-gate outputs.")
+            # raise NotImplementedError(
+            #     "The bfcl library only supports converting to a circuit "
+            #     "object for circuits with in-order identity-gate outputs."
+            # )
             # Update circuit to new output format.
             self_gate.extend(
                 [
@@ -339,17 +343,17 @@ class bfc():
                 is_input=True
             )
         for g in intermediate_gates:
-            assert(len(g.wire_in_index) > 0)
-            assert(len(g.wire_out_index) > 0)
+            assert len(g.wire_in_index) > 0
+            assert len(g.wire_out_index) > 0
             _g = c.gate(
                 g.operation,
                 list(map(lambda i : wires[i], g.wire_in_index))
             )
             for wire_out_index in g.wire_out_index:
-                assert(wire_out_index > self.wire_in_count - 1)  # Assert well ordering of inputs gates (to wires).
+                assert wire_out_index > self.wire_in_count - 1  # Ord. gate inputs to circuit inputs
                 wires[wire_out_index] = _g
         for g in output_gates:
-            assert(len(g.wire_in_index) > 0)
+            assert len(g.wire_in_index) > 0
             c.gate(
                 g.operation,  # This should always be `circuit_.op.id_`.
                 list(map(lambda i : wires[i], g.wire_in_index)),
@@ -445,7 +449,7 @@ class bfc():
         >>> c.emit(True).split("\\n")
         ['2 4', '1 2', '1 1', '2 1 0 1 2 AND', '1 1 2 3 LID']
         """
-        _self = bfc(self.circuit()) if force_id_outputs else self  # Temporarily post-process if flag is True.
+        _self = bfc(self.circuit()) if force_id_outputs else self  # temporarily process if flag set
         lines = [
             [str(_self.gate_count), str(_self.wire_count)],
             [str(_self.value_in_count)] + list(map(str, _self.value_in_length)),
