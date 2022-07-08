@@ -44,7 +44,7 @@ This library makes it possible to parse a circuit definition that conforms to th
     >>> ss += ['2 1 15 16 8 AND', '2 1 4 5 22 AND']
     >>> ss += ['2 1 6 7 23 AND', '2 1 22 23 9 AND']
     >>> ss += ['2 1 8 9 35 AND']
-    >>> c = circuit('\n'.join(ss))
+    >>> c = bfc('\n'.join(ss))
 
 A string representation that conforms to the Bristol Fashion syntax can be emitted::
 
@@ -81,7 +81,7 @@ As an alternative to using a string representation to define a circuit, it is al
 	>>> g1 = c.gate(circuit_.op.id_, is_input=True)
 	>>> g2 = c.gate(circuit_.op.and_, [g0, g1])
 	>>> g3 = c.gate(circuit_.op.id_, [g2], is_output=True)
-	>>> circuit(c).emit().split('\n')
+	>>> bfc(c).emit().split('\n')
 	['2 4', '1 2', '1 1', '2 1 0 1 2 AND', '1 1 2 3 LID']
 
 Documentation

@@ -3,7 +3,7 @@ Python library for working with circuit definitions
 represented using the Bristol Fashion.
 """
 from __future__ import annotations
-from typing import Sequence
+from typing import Sequence, Union, Type
 import doctest
 from parts import parts
 import circuit as circuit_
@@ -114,7 +114,7 @@ class gate():
             self.operation.emit()
         ])
 
-class circuit():
+class bfc():
     """
     Data structure for circuits represented using the Bristol Fashion.
     A string representing a circuit that conforms to the Bristol Fashion
@@ -126,7 +126,7 @@ class circuit():
     >>> circuit_string.extend(['2 1 6 7 23 AND', '2 1 22 23 9 AND'])
     >>> circuit_string.extend(['2 1 8 9 35 AND'])
     >>> circuit_string = "\\n".join(circuit_string)
-    >>> c = circuit(circuit_string)
+    >>> c = bfc(circuit_string)
 
     The string representation can be recovered from an instance of this
     class, as well.
@@ -145,6 +145,24 @@ class circuit():
     2 1 6 7 23 AND
     2 1 22 23 9 AND
     2 1 8 9 35 AND
+
+    We could just add a '1 1 35 36 LID' line, and increment '8 16', but the
+    `force_id_outputs` is perhaps not as lazy as it could be and performs a
+    full `bfc`->`circuit_`->`bfc` conversion to get the identity gates,
+    hence the wire renumbering.
+    >>> for line in c.emit(force_id_outputs=True).split("\\n"):
+    ...     print(line)
+    8 16
+    2 4 4
+    1 1
+    2 1 0 1 8 AND
+    2 1 2 3 9 AND
+    2 1 8 9 10 AND
+    2 1 4 5 11 AND
+    2 1 6 7 12 AND
+    2 1 11 12 13 AND
+    2 1 10 13 14 AND
+    1 1 14 15 LID
 
     A circuit can also be consructed using an instance of the
     :obj:`~circuit.circuit.circuit` class defined in the
@@ -195,7 +213,7 @@ class circuit():
     True
 
     A circuit can also be evaluated an on a sequence of input bit vectors
-    using the :obj:`circuit.evaluate` method.
+    using the :obj:`bfcl.evaluate` method.
 
     >>> from itertools import product
     >>> inputs = list(product(*([[0, 1]]*4)))
@@ -204,8 +222,8 @@ class circuit():
     >>> [c.evaluate(p)[0][0] for p in pairs] == outputs
     True
     """
-    def __init__(self: circuit, raw=None):
-        """Initialize a circuit data structure instance."""
+    def __init__(self: bfc, raw=None):
+        """Initialize a bfc data structure instance."""
         self.gate_count = 0
         self.wire_count = 0
         self.value_in_count = 0
@@ -228,7 +246,7 @@ class circuit():
         elif isinstance(raw, circuit_.circuit):
             self.circuit(raw)
 
-    def circuit(self: circuit, c: circuit_.circuit):
+    def circuit(self: bfc, c: circuit_.circuit=None) -> Union[Type[None], circuit_.circuit]:
         """
         Populate this Bristol Fashion circuit instance using an instance of the
         :obj:`~circuit.circuit.circuit` class defined in the
@@ -243,41 +261,107 @@ class circuit():
         >>> g3 = c_.gate(op.id_, [g2], is_output=True)
         >>> c_.count()
         4
-        >>> c = circuit(c_)
+        >>> c = bfc(c_)
         >>> c.emit().split("\\n")
         ['2 4', '1 2', '1 1', '2 1 0 1 2 AND', '1 1 2 3 LID']
+        >>> c_reparsed = bfc(bfc(c_).circuit())
+        >>> c_reparsed.emit().split("\\n")
+        ['2 4', '1 2', '1 1', '2 1 0 1 2 AND', '1 1 2 3 LID']
         """
-        sig = c.signature
-        self.gate_count =\
-            c.count(lambda g: not (len(g.inputs) == 0 and len(g.outputs) > 0))
-        self.wire_count = len(c.gate)
-        self.value_in_count =\
-            1 if sig.input_format is None else len(sig.input_format)
-        self.value_in_length =\
-            [self.wire_count - self.gate_count]\
-            if sig.input_format is None else\
-            sig.input_format
-        self.value_out_count =\
-            1 if sig.output_format is None else len(sig.output_format)
-        self.value_out_length =\
-            [c.count(lambda g: len(g.outputs) == 0)]\
-            if sig.output_format is None else\
-            sig.output_format
+        if c:
+            sig = c.signature
+            self.gate_count =\
+                c.count(lambda g: not (len(g.inputs) == 0 and len(g.outputs) > 0))
+            self.wire_count = len(c.gate)
+            self.value_in_count =\
+                1 if sig.input_format is None else len(sig.input_format)
+            self.value_in_length =\
+                [self.wire_count - self.gate_count]\
+                if sig.input_format is None else\
+                sig.input_format
+            self.value_out_count =\
+                1 if sig.output_format is None else len(sig.output_format)
+            self.value_out_length =\
+                [c.count(lambda g: len(g.outputs) == 0)]\
+                if sig.output_format is None else\
+                sig.output_format
 
-        self.wire_in_count = self.wire_count - self.gate_count
-        self.wire_in_index = list(range(0, self.wire_in_count))
-        self.wire_out_count = c.count(lambda g: len(g.outputs) == 0)
-        self.wire_out_index =\
-            list(range(self.wire_count - self.wire_out_count, self.wire_count))
+            self.wire_in_count = self.wire_count - self.gate_count
+            self.wire_in_index = list(range(0, self.wire_in_count))
+            self.wire_out_count = c.count(lambda g: len(g.outputs) == 0)
+            self.wire_out_index =\
+                list(range(self.wire_count - self.wire_out_count, self.wire_count))
 
-        self.gate = []
-        for g in c.gate:
-            if len(g.inputs) > 0:
-                self.gate.append(gate(
-                    len(g.inputs), 1,
-                    [ig.index for ig in g.inputs], [g.index],
-                    operation(g.operation)
-                ))
+            self.gate = []
+            for g in c.gate:
+                if len(g.inputs) > 0:
+                    self.gate.append(gate(
+                        len(g.inputs), 1,
+                        [ig.index for ig in g.inputs], [g.index],
+                        operation(g.operation)
+                    ))
+            return None
+        #else if (c == None):
+        input_format = self.value_in_length
+        output_format = self.value_out_length
+        c = circuit_.circuit(circuit_.signature(input_format, output_format))
+
+        self_gate = list(self.gate)
+        # Don't mutate the real gate list (only protects from the `.extend` call in the `if` block).
+
+        if not (
+                all(self.gate[gate_index].operation == circuit_.op.id_ for gate_index in
+                    range(self.gate_count - self.wire_out_count, self.gate_count))
+                and self.wire_out_index == list(
+                    range(self.wire_count - self.wire_out_count, self.wire_count)
+                )
+        ):
+            # raise NotImplementedError(
+            #     "The bfcl library only supports converting to a circuit "
+            #     "object for circuits with in-order identity-gate outputs."
+            # )
+            # Update circuit to new output format.
+            self_gate.extend(
+                [
+                    gate(
+                        1,
+                        1,
+                        [i - self.wire_out_count],
+                        [i],
+                        operation(circuit_.op.id_)  # operation.parse('LID')
+                    )
+                    for i in range(self.wire_count, self.wire_count + self.wire_out_count)
+                ]
+            )
+
+        intermediate_gates = self_gate[:]
+        output_gates = self_gate[-self.wire_out_count:]
+        wires = {}
+        for wire_index in range(self.wire_in_count):#input_gates:
+            wires[wire_index] = c.gate(
+                circuit_.op.id_,
+                is_input=True
+            )
+        for g in intermediate_gates:
+            assert len(g.wire_in_index) > 0
+            assert len(g.wire_out_index) > 0
+            _g = c.gate(
+                g.operation,
+                list(map(lambda i : wires[i], g.wire_in_index))
+            )
+            for wire_out_index in g.wire_out_index:
+                assert wire_out_index > self.wire_in_count - 1  # Ord. gate inputs to circuit inputs
+                wires[wire_out_index] = _g
+        for g in output_gates:
+            assert len(g.wire_in_index) > 0
+            c.gate(
+                g.operation,  # This should always be `circuit_.op.id_`.
+                list(map(lambda i : wires[i], g.wire_in_index)),
+                is_output=True
+            )
+        c.prune_and_topological_sort_stable()  # really only need to prune chained identity gates
+
+        return c
 
     def parse(self: circuit, raw: str):
         """
@@ -290,7 +374,7 @@ class circuit():
         >>> s.extend(['2 1 6 7 23 AND', '2 1 22 23 9 AND'])
         >>> s.extend(['2 1 8 9 35 AND'])
         >>> s = "\\n".join(s)
-        >>> c = circuit()
+        >>> c = bfc()
         >>> c.parse(s)
         >>> for line in c.emit().split("\\n"):
         ...     print(line)
@@ -336,7 +420,7 @@ class circuit():
         # Parse the individual gates.
         self.gate = [gate.parse(row) for row in rows[3:self.gate_count+3]]
 
-    def emit(self: circuit, progress=lambda _: _) -> str:
+    def emit(self: circuit, force_id_outputs=False, progress=lambda _: _) -> str:
         """
         Emit a string representation of a Bristol Fashion circuit definition.
 
@@ -354,20 +438,24 @@ class circuit():
         The ``c_`` object above can be converted into an instance of the
         class :obj:`circuit`.
 
-        >>> c = circuit(c_)
+        >>> c = bfc(c_)
 
         This method can be used to emit a string representation of an object,
         where the string conforms to the Bristol Fashion syntax.
 
         >>> c.emit().split("\\n")
         ['2 4', '1 2', '1 1', '2 1 0 1 2 AND', '1 1 2 3 LID']
+
+        >>> c.emit(True).split("\\n")
+        ['2 4', '1 2', '1 1', '2 1 0 1 2 AND', '1 1 2 3 LID']
         """
+        _self = bfc(self.circuit()) if force_id_outputs else self  # temporarily process if flag set
         lines = [
-            [str(self.gate_count), str(self.wire_count)],
-            [str(self.value_in_count)] + list(map(str, self.value_in_length)),
-            [str(self.value_out_count)] + list(map(str, self.value_out_length))
+            [str(_self.gate_count), str(_self.wire_count)],
+            [str(_self.value_in_count)] + list(map(str, _self.value_in_length)),
+            [str(_self.value_out_count)] + list(map(str, _self.value_out_length))
         ]
-        lines.extend([[g.emit()] for g in progress(self.gate)])
+        lines.extend([[g.emit()] for g in progress(_self.gate)])
         return "\n".join(" ".join(line) for line in lines)
 
     def evaluate(
@@ -382,7 +470,7 @@ class circuit():
         >>> s.extend(['2 1 15 16 8 AND', '2 1 4 5 22 AND'])
         >>> s.extend(['2 1 6 7 23 AND', '2 1 22 23 9 AND'])
         >>> s.extend(['2 1 8 9 35 AND'])
-        >>> c = circuit("\\n".join(s))
+        >>> c = bfc("\\n".join(s))
         >>> c.evaluate([[1, 0, 1, 1], [1, 1, 1, 0]])
         [[0]]
         >>> c.evaluate([[1, 1, 1, 1], [1, 1, 1, 1]])
